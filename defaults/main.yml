@@ -1,2 +1,7 @@
 ---
-# defaults file for libreoffice
+java_version:                     1.8
+libreoffice_version:              "5.2.5"
+libreoffice_install_dir:          "/opt"
+libreoffice_download_dir:         "{{ ansible_env.HOME}}"
+libreoffice_url:                  "https://download.documentfoundation.org/libreoffice/stable/{{ libreoffice_version }}/{{ package }}/{{ architecture }}/{{ libreoffice_download_file }}"
+libreoffice_path:                 "{{ libreoffice_install_dir }}/libreoffice5.2/program/"

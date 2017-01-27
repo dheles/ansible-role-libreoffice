@@ -1,0 +1,4 @@
+package:              "deb"
+kernel:               "Linux"
+architecture:         "x86_64"
+libreoffice_subpath:  "DEBS"

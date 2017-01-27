@@ -1,2 +1,6 @@
 ---
-# vars file for libreoffice
+libreoffice_minimum_java_version:  1.7
+libreoffice_dir:                  "LibreOffice_{{ libreoffice_version }}_{{ kernel }}_{{ architecture | replace('_','-') }}_{{ package }}"
+libreoffice_download_file:        "{{ libreoffice_dir }}.tar.gz"
+libreoffice_checksum_algo:        "sha256"
+libreoffice_checksum_url:         "{{ libreoffice_url }}.{{ libreoffice_checksum_algo }}"

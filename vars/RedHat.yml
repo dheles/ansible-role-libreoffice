@@ -1,0 +1,4 @@
+package:              "rpm"
+kernel:               "Linux"
+architecture:         "x86_64"
+libreoffice_subpath:  "RPMS"

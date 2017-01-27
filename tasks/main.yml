@@ -1,2 +1,105 @@
 ---
-# tasks file for libreoffice
+- name: include os-specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: get java version
+  shell:   "java -version 2>&1"
+  register: java_version_result
+  changed_when: false
+
+  # NOTE: regex_search() returns an array of matches, so we will need returned_java_version[0] to make use of the first (and only) value
+- set_fact: returned_java_version={{ java_version_result.stdout | regex_search('(?P<test>\d+\.\d+)', '\\g<test>' ) }}
+
+- name: test java version
+  fail:
+    msg: "this installation of LibreOffice requires java version {{ libreoffice_minimum_java_version }} or higher"
+  when: "not returned_java_version[0] | version_compare('{{ libreoffice_minimum_java_version }}', '>=')"
+
+- name: install prereqs
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - cairo
+    - cups
+
+- name: get libreoffice checksum
+  set_fact:
+    libreoffice_checksum: "{{ item | replace(libreoffice_download_file,'') | trim }}"
+  with_url: "{{ libreoffice_checksum_url }}"
+
+- name: stat libreoffice d/l
+  stat:
+    path:  "{{ libreoffice_download_dir }}/{{ libreoffice_download_file }}"
+    checksum_algorithm: "{{ libreoffice_checksum_algo }}"
+  register: existing_dl
+
+- set_fact:
+    force_new_download: "{{ existing_dl.stat.checksum != libreoffice_checksum }}"
+  when: existing_dl.stat.exists
+
+- name: get libreoffice
+  get_url:
+    url:      "{{ libreoffice_url }}"
+    dest:     "{{ libreoffice_download_dir }}"
+    checksum: "{{ libreoffice_checksum_algo }}:{{ libreoffice_checksum }}"
+  register: got_libreoffice
+  when: force_new_download | default ('true')
+
+- name: extract libreoffice
+  unarchive:
+    src:        "{{ libreoffice_download_dir }}/{{ libreoffice_download_file }}"
+    dest:       "{{ libreoffice_install_dir }}"
+    remote_src: yes
+  when: got_libreoffice.changed
+
+  # unfortunately, the extracted directory name is not necessarily predictable, so we have to get it
+- name: get libreoffice package path
+  shell: "find {{ libreoffice_install_dir }}/LibreOffice* -maxdepth 0"
+  register: libreoffice_package_path_result
+  changed_when: false
+
+- name: set libreoffice package  path
+  set_fact: libreoffice_package_path={{ libreoffice_package_path_result.stdout }}
+
+- name: get libreoffice packages
+  shell: "ls {{ libreoffice_package_path }}/{{ libreoffice_subpath }}/*.{{ package }}"
+  register: libreoffice_package_result
+  changed_when: false
+
+- name: set libreoffice packages
+  set_fact: libreoffice_packages={{ libreoffice_package_result.stdout_lines }}
+
+- name: install libreoffice - RedHat
+  yum:
+    name: "{{ item }}"
+  with_items: "{{ libreoffice_packages }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: install libreoffice - Debian
+  apt:
+    deb: "{{ item }}"
+  with_items: "{{ libreoffice_packages }}"
+  when: ansible_os_family == 'Debian'
+
+- name: add libreoffice to path
+  lineinfile:
+    dest:   "/etc/profile.d/libreoffice.sh"
+    line:   "export PATH=$PATH:{{ libreoffice_path }}"
+    state:  present
+    create: yes
+
+- name: get libreoffice version
+  shell:   "{{ libreoffice_path }}/soffice --version"
+  args:
+    executable: /bin/bash
+  register: libreoffice_version_result
+  changed_when: false
+
+  # NOTE: regex_search() returns an array of matches, so we will need returned_java_version[0] to make use of the first (and only) value
+- set_fact: returned_libreoffice_version={{ libreoffice_version_result.stdout | regex_search('(?P<test>\d+\.\d+\.\d+)', '\\g<test>' ) }}
+
+- name: test libreoffice version
+  fail:
+    msg: "attempted to install libreoffice version {{ libreoffice_version }}, but something went wrong"
+  when: "not returned_libreoffice_version[0] | version_compare('{{ libreoffice_version }}', '==')"

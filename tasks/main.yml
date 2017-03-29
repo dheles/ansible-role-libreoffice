@@ -99,7 +99,7 @@
   # NOTE: regex_search() returns an array of matches, so we will need returned_java_version[0] to make use of the first (and only) value
 - set_fact: returned_libreoffice_version={{ libreoffice_version_result.stdout | regex_search('(?P<test>\d+\.\d+\.\d+)', '\\g<test>' ) }}
 
-- name: test libreoffice version
+- name: test libreoffice version (skipped == passing)
   fail:
     msg: "attempted to install libreoffice version {{ libreoffice_version }}, but something went wrong"
   when: "not returned_libreoffice_version[0] | version_compare('{{ libreoffice_version }}', '==')"

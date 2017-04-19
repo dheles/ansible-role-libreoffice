@@ -2,7 +2,7 @@
 java_version:                     1.8
 libreoffice_version_major:        5
 libreoffice_version_minor:        3
-libreoffice_version_patch:        1
+libreoffice_version_patch:        2
 libreoffice_version:              "{{ libreoffice_version_major }}.{{ libreoffice_version_minor }}.{{ libreoffice_version_patch }}"
 libreoffice_install_dir:          "/opt"
 libreoffice_download_dir:         "{{ ansible_env.HOME}}"

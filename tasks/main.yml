@@ -23,10 +23,22 @@
     - cairo
     - cups
 
-- name: get libreoffice checksum
+- name: set libreoffice checksum from override, if provided
   set_fact:
-    libreoffice_checksum: "{{ item | replace(libreoffice_download_file,'') | trim }}"
-  with_url: "{{ libreoffice_checksum_url }}"
+    libreoffice_checksum: "{{ libreoffice_checksum_override }}"
+  when: libreoffice_checksum_override != ""
+
+- block:
+  # TODO: perhaps libreoffice isn't intending to publish checksums anymore?
+  # when the checksum with_url is 404 (as it has been for a week now),
+  # this task fails, regardless of the with statement.
+  # maybe it's best to clean this up and just resign myself to using the
+  # manually-calculated checksum from now on...
+  # - name: get libreoffice checksum
+  #   set_fact:
+  #     libreoffice_checksum: "{{ item | replace(libreoffice_download_file,'') | trim }}"
+  #   with_url: "{{ libreoffice_checksum_url }}"
+  # when: libreoffice_checksum_override == ""
 
 - name: stat libreoffice d/l
   stat:

@@ -28,7 +28,7 @@
     libreoffice_checksum: "{{ libreoffice_checksum_override }}"
   when: libreoffice_checksum_override != ""
 
-- block:
+# - block:
   # TODO: perhaps libreoffice isn't intending to publish checksums anymore?
   # when the checksum with_url is 404 (as it has been for a week now),
   # this task fails, regardless of the with statement.
